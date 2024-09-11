@@ -1,36 +1,37 @@
 const ExcelJs = require('exceljs');
 
-
-async function excelTest(){
-
-    let output = {row: -1, column: -1};
-
+async function writeExcelTest(searchText, replaceText, filePath){
     const workbook = new ExcelJs.Workbook();
-    await workbook.xlsx.readFile("./files/excellDownloadTest.xlsx");
+    await workbook.xlsx.readFile(filePath);
+    
+    const worksheet = workbook.getWorksheet('Sheet1'); // This needs to be declared before calling readExcel
 
-    const worksheet = workbook.getWorksheet('Sheet1');
-    worksheet.eachRow((row, rowNumber) =>
-        {
-            row.eachCell((cell, colNumber)=>
-                {
-                    // // print all excel content
-                    // console.log(cell.value);
-                    
-                    // //identify item
-                    if(cell.value === "Apple"){
-                        console.log(rowNumber) //3
-                        console.log(colNumber) //2
+    // Call readExcel and wait for its completion
+    const output = await readExcel(worksheet, searchText);
 
-                        output.row = rowNumber;
-                        output.column = colNumber;
-                    }
-                })
-        })
-
-    const cell = worksheet.getCell(output.row, output.column);
-    cell.value = "Iphone";
-    await workbook.xlsx.writeFile("./files/excellDownloadTest.xlsx");
-
+    if (output.row !== -1 && output.column !== -1) {
+        const cell = worksheet.getCell(output.row, output.column);
+        cell.value = replaceText;
+        await workbook.xlsx.writeFile(filePath);
+        console.log(`Replaced '${searchText}' with '${replaceText}' at row ${output.row}, column ${output.column}.`);
+    } else {
+        console.log(`Text '${searchText}' not found in the file.`);
+    }
 }
 
-excelTest();
+async function readExcel(worksheet, searchText) {
+    let output = { row: -1, column: -1 };
+
+    worksheet.eachRow((row, rowNumber) => {
+        row.eachCell((cell, colNumber) => {
+            if (cell.value === searchText) {
+                output.row = rowNumber;
+                output.column = colNumber;
+            }
+        });
+    });
+
+    return output;
+}
+
+writeExcelTest("Banana", "Republic", "./files/excellDownloadTest.xlsx");
