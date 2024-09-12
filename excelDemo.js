@@ -1,19 +1,19 @@
 const ExcelJs = require('exceljs');
 
-async function writeExcelTest(searchText, replaceText, filePath){
+async function writeExcelTest(searchText, replaceText, change, filePath){
     const workbook = new ExcelJs.Workbook();
     await workbook.xlsx.readFile(filePath);
     
     const worksheet = workbook.getWorksheet('Sheet1'); // This needs to be declared before calling readExcel
 
     // Call readExcel and wait for its completion
-    const output = await readExcel(worksheet, searchText);
+    const output = await readExcel(worksheet, searchText, change);
 
     if (output.row !== -1 && output.column !== -1) {
-        const cell = worksheet.getCell(output.row, output.column);
+        const cell = worksheet.getCell(output.row, output.column + change.colChange);
         cell.value = replaceText;
         await workbook.xlsx.writeFile(filePath);
-        console.log(`Replaced '${searchText}' with '${replaceText}' at row ${output.row}, column ${output.column}.`);
+        console.log(`Replaced price for '${searchText}' to '${replaceText}' at row ${output.row}, column ${output.column}.`);
     } else {
         console.log(`Text '${searchText}' not found in the file.`);
     }
@@ -34,4 +34,7 @@ async function readExcel(worksheet, searchText) {
     return output;
 }
 
-writeExcelTest("Banana", "Republic", "./files/excellDownloadTest.xlsx");
+//update mango price to 350
+
+
+writeExcelTest("Republic", 350, {rowChange: 0, colChange:2}, "./files/excellDownloadTest.xlsx");
